@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class ApiConfig {
     companion object {
-        private const val BASE_URL = "https://localhost/api/v1/"
+        private const val BASE_URL = "https://bangkit-capstone-442321.uc.r.appspot.com/auth/"
 
         // Konstanta untuk setiap endpoint API
         const val LOGIN_ENDPOINT = "${BASE_URL}login"

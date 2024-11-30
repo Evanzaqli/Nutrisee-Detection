@@ -1,7 +1,9 @@
 package com.capstone.nutrisee.login
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -57,7 +59,9 @@ class LoginActivity : AppCompatActivity() {
             is Result.Loading -> setLoadingState(true)
             is Result.Success -> {
                 setLoadingState(false)
-                showToast(result.data.toString())
+                showToast("Login berhasil")
+                // Menyimpan token di SharedPreferences setelah login sukses
+                saveTokenToSharedPreferences(result.data.token)
                 navigateToHome()
             }
             is Result.Error -> {
@@ -66,6 +70,13 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
+    private fun saveTokenToSharedPreferences(token: String) {
+        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("token", token)  // Menyimpan token
+        editor.apply()
+    }
+
 
     private fun setLoadingState(isLoading: Boolean) {
         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
@@ -93,6 +104,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun navigateToHome() {
+        Log.d("LoginActivity", "Navigating to MainActivity")
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
