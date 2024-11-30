@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">NutriSee</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="empty_username">Username cannot be empty</string>
+    <string name="empty_email">Email cannot be empty</string>
+    <string name="empty_password">Password cannot be empty</string>
+    <string name="password_too_short">Password must be at least 6 characters long</string>
+    <string name="already_have_an_account_login_here">Already have an account? Login here.</string>
+    <string name="login_failed">Login gagal. Silakan coba lagi.</string>
+    <string name="pendaftaran_berhasil">Register succes</string>
+    <string name="registration_failed">register gagal</string>
+
+</resources>
