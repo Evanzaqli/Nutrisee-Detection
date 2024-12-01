@@ -22,10 +22,8 @@ class RegisterViewModel : ViewModel() {
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                // Membuat request
                 val request = RegisterRequest(username, email, password)
 
-                // Memanggil API
                 val response = ApiConfig.getApiService().register(request)
 
                 if (response.isSuccessful) {

@@ -10,5 +10,6 @@
     <string name="login_failed">Login gagal. Silakan coba lagi.</string>
     <string name="pendaftaran_berhasil">Register succes</string>
     <string name="registration_failed">register gagal</string>
+    <string name="add_to_favorite_desc">Add to Favorites</string>
 
 </resources>

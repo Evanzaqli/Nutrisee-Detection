@@ -9,7 +9,6 @@ class ApiConfig {
     companion object {
         private const val BASE_URL = "https://bangkit-capstone-442321.uc.r.appspot.com/auth/"
 
-        // Konstanta untuk setiap endpoint API
         const val LOGIN_ENDPOINT = "${BASE_URL}login"
         const val REGISTER_ENDPOINT = "${BASE_URL}register"
         const val BMI_DATA_ENDPOINT = "${BASE_URL}bmi"
