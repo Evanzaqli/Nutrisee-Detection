@@ -1,8 +1,11 @@
 Ayam Bakar
 Ayam Geprek
 Ayam Goreng
-Bakso
+Ayam Krispi
+Ayam Suwir
+Bakso Kuah
 Ikan Bakar
+Mentimun
 Mie Goreng
 Nasi Goreng
 Nasi Kuning
@@ -16,7 +19,4 @@ Tahu Goreng
 Telur Goreng
 Telur Rebus
 Tempe Goreng
-Unknown1
-Unknown2
-Unknown3
-Unknown4
+Tomat

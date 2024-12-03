@@ -35,16 +35,25 @@ class ResultActivity : AppCompatActivity() {
                 findViewById<ImageView>(R.id.imageResult).setImageBitmap(bitmap)
 
                 val classifier = ImageClassifierHelper(this)
-                val results = classifier.classifyStaticImage(bitmap)
+                val nutritionResult = classifier.analyzeFood(bitmap)
+
+                val foodName = "Detect Result"
+                val resultsList = listOf(
+                    "Protein" to nutritionResult.protein,
+                    "Carbohydrate" to nutritionResult.carbohydrate,
+                    "Fat" to nutritionResult.fat,
+                    "Fiber" to nutritionResult.fiber,
+                    "Calories" to nutritionResult.calories
+                )
 
                 val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewNutrients)
                 recyclerView.layoutManager = LinearLayoutManager(this)
-                recyclerView.adapter = NutritionResultAdapter(results)
+                recyclerView.adapter = NutritionResultAdapter(foodName, resultsList)
             } catch (e: Exception) {
-                Toast.makeText(this, "Gagal memproses gambar: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Failed to process image: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         } else {
-            Toast.makeText(this, "Gambar tidak ditemukan", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Image not found", Toast.LENGTH_SHORT).show()
         }
     }
 }

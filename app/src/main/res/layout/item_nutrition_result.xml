@@ -1,22 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:layout_margin="8dp"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="8dp">
 
-    <TextView
-        android:id="@+id/textNutrientName"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Nutrient"
-        android:textSize="16sp" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/textNutrientValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0 gr"
-        android:textSize="16sp" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/textFoodName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Food Name"
+            android:textSize="18sp"
+            android:fontFamily="@font/poppins"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textProteinValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Protein: 0 g"
+            android:fontFamily="@font/poppins"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textCarboValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Carbohydrate: 0 g"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppins"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textFatValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fat: 0 g"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppins"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textFiberValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fiber: 0 g"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppins"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/textCaloriesValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Calories: 0 kcal"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppins"
+            android:layout_marginBottom="8dp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

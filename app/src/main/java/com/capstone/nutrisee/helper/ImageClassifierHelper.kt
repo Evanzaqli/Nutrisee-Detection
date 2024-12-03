@@ -3,53 +3,45 @@ package com.capstone.nutrisee.helper
 import android.content.Context
 import android.graphics.Bitmap
 import com.capstone.nutrisee.ml.Detector
-import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ops.ResizeOp
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 
-class ImageClassifierHelper(private val context: Context) {
 
-    private fun setupImageClassifier(): Detector {
-        return Detector.newInstance(context)
-    }
+class ImageClassifierHelper(context: Context) {
 
-    private fun loadLabels(): List<String> {
-        val labels = mutableListOf<String>()
-        val inputStream = context.assets.open("labels.txt")
-        inputStream.bufferedReader().useLines { lines ->
-            lines.forEach { labels.add(it) }
-        }
-        return labels
-    }
+        private val model: Detector = Detector.newInstance(context)
 
-    fun classifyStaticImage(bitmap: Bitmap): List<Pair<String, Float>> {
-        val model = setupImageClassifier()
-        val labels = loadLabels()
+        fun analyzeFood(bitmap: Bitmap): NutritionResult {
+            val tensorImage = TensorImage.fromBitmap(bitmap)
 
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 480, 480, true)
-        val image = TensorImage.fromBitmap(resizedBitmap)
+            val outputs = model.process(tensorImage)
+            val output = outputs.outputAsTensorBuffer
 
-        val imageProcessor = ImageProcessor.Builder()
-            .add(ResizeOp(480, 480, ResizeOp.ResizeMethod.BILINEAR))
-            .build()
+            val result = parseOutput(output)
 
-        val processedImage = imageProcessor.process(image)
+            model.close()
 
-        val outputs = model.process(processedImage)
-
-        val outputCategories = outputs.outputAsCategoryList
-
-        println("Output categories size: ${outputCategories.size}")
-        outputCategories.forEachIndexed { index, category ->
-            println("Category $index: ${category.label} - ${category.score}")
+            return result
         }
 
-        model.close()
+        private fun parseOutput(output: TensorBuffer): NutritionResult {
+            val outputArray = output.floatArray
 
-        return outputCategories.mapIndexed { index, category ->
-            val label = if (index < labels.size) labels[index] else "Unknown"
-            Pair(label, category.score)
-        }.sortedByDescending { it.second }
+            return NutritionResult(
+                protein = outputArray[0],
+                carbohydrate = outputArray[1],
+                fat = outputArray[2],
+                fiber = outputArray[3],
+                calories = outputArray[4]
+            )
+        }
     }
 
-}
+    data class NutritionResult(
+        val protein: Float,
+        val carbohydrate: Float,
+        val fat: Float,
+        val fiber: Float,
+        val calories: Float
+    )
+
