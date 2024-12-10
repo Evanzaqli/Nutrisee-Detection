@@ -1,5 +1,6 @@
 package com.capstone.nutrisee.view
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +10,7 @@ import com.capstone.nutrisee.data.model.BmiDataResponse
 import com.capstone.nutrisee.service.ApiConfig
 import com.capstone.nutrisee.service.ApiService
 import com.capstone.nutrisee.databinding.ActivitySettingBinding
+import com.capstone.nutrisee.login.LoginActivity
 import com.capstone.nutrisee.login.OnboardingActivity
 import kotlinx.coroutines.launch
 import retrofit2.Response
@@ -27,7 +29,10 @@ class SettingActivity : AppCompatActivity() {
         apiService = ApiConfig.getApiService()
         sessionManager = SessionManager(this)
 
+        setupListeners()
+    }
 
+    private fun setupListeners() {
         binding.btnConfirm.setOnClickListener {
             val age = binding.editAge.text.toString().toIntOrNull()
             val height = binding.editHeight.text.toString().toIntOrNull()
@@ -41,7 +46,6 @@ class SettingActivity : AppCompatActivity() {
                 else -> "Unknown"
             }
 
-
             if (age != null && height != null && weight != null) {
                 sessionManager.saveUserSession(age, height, weight, selectedGender, selectedGoal)
             }
@@ -49,15 +53,33 @@ class SettingActivity : AppCompatActivity() {
             getBmiData()
         }
 
-
         binding.btnLogout.setOnClickListener {
-            sessionManager.clearSession()
-
-            val intent = Intent(this, OnboardingActivity::class.java)
-            startActivity(intent)
-
-            finish()
+            showLogoutConfirmationDialog()
         }
+    }
+
+    private fun showLogoutConfirmationDialog() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        builder.setTitle("Konfirmasi Logout")
+        builder.setMessage("Apakah Anda yakin ingin keluar?")
+        builder.setPositiveButton("Ya") { _, _ ->
+            performLogout()
+        }
+        builder.setNegativeButton("Batal") { dialog, _ ->
+            dialog.dismiss()
+        }
+        builder.create().show()
+    }
+
+    private fun performLogout() {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        sharedPreferences.edit().clear().apply() // Menghapus token
+
+        val intent = Intent(this, OnboardingActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+
+        finish()
     }
 
     private fun getBmiData() {
@@ -67,7 +89,7 @@ class SettingActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val bmiData = response.body()
                     bmiData?.let {
-                        // Proses data
+                        // Proses data jika diperlukan
                     }
                 } else {
                     // Tangani jika gagal
@@ -78,4 +100,3 @@ class SettingActivity : AppCompatActivity() {
         }
     }
 }
-

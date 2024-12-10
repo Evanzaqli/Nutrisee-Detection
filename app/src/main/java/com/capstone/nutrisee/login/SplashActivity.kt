@@ -6,27 +6,22 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.capstone.nutrisee.login.LoginActivity
-import com.capstone.nutrisee.view.MainActivity
 
 class SplashActivity : AppCompatActivity() {
 
-    private lateinit var sharedPreferences: SharedPreferences
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
-        // Cek apakah pengguna sudah login
-        if (isUserLoggedIn()) {
+        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        val token = sharedPreferences.getString("token", null)
+
+        if (token != null) {
+            // Token ditemukan, arahkan ke Home
             navigateToHome()
         } else {
+            // Token tidak ditemukan, arahkan ke Login
             navigateToLogin()
         }
-    }
-
-    private fun isUserLoggedIn(): Boolean {
-        val token = sharedPreferences.getString("user_token", null)
-        return token != null
     }
 
     private fun navigateToHome() {

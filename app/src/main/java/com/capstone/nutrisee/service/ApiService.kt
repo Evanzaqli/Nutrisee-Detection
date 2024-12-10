@@ -7,12 +7,16 @@ import com.capstone.nutrisee.data.model.RegisterRequest
 import com.capstone.nutrisee.data.model.RegisterResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.POST
 
 interface ApiService {
 
-    @POST(ApiConfig.LOGIN_ENDPOINT)
-    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+    @POST("login")
+    suspend fun login(
+        @Body request: LoginRequest
+    ): Response<LoginResponse>
 
     @POST(ApiConfig.REGISTER_ENDPOINT)
     suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>

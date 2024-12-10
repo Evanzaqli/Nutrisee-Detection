@@ -24,6 +24,14 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Cek apakah token sudah ada di SharedPreferences, jika sudah langsung pindah ke MainActivity
+        val token = getAuthToken()
+        if (!token.isNullOrEmpty()) {
+            Log.d("LoginActivity", "Token ditemukan, mengalihkan ke MainActivity")
+            navigateToHome() // Pindah ke MainActivity jika token ada
+            return
+        }
+
         setupListeners()
         observeViewModel()
     }
@@ -34,7 +42,7 @@ class LoginActivity : AppCompatActivity() {
             val password = binding.etPassword.text.toString().trim()
 
             if (validateInput(email, password)) {
-                loginViewModel.login(email, password)
+                loginViewModel.login(email, password) // Memulai proses login
             }
         }
 
@@ -60,23 +68,35 @@ class LoginActivity : AppCompatActivity() {
             is Result.Success -> {
                 setLoadingState(false)
                 showToast("Login berhasil")
-                // Menyimpan token di SharedPreferences setelah login sukses
-                saveTokenToSharedPreferences(result.data.token)
+
+                // Menyimpan token ke SharedPreferences
+                saveAuthToken(result.data.data.token)
+                Log.d("LoginActivity", "Token berhasil disimpan: ${result.data.data.token}")
+
+                // Verifikasi penyimpanan token
+                val storedToken = getAuthToken()
+                if (!storedToken.isNullOrEmpty()) {
+                    Log.d("SharedPreferences", "Token berhasil disimpan: $storedToken")
+
+                    // Cek apakah format token valid (misalnya, jika itu JWT, harus ada 3 bagian)
+                    if (storedToken.split(".").size == 3) {
+                        Log.d("SharedPreferences", "Format token valid.")
+                    } else {
+                        Log.d("SharedPreferences", "Format token tidak valid.")
+                    }
+                } else {
+                    Log.d("SharedPreferences", "Token tidak ditemukan setelah disimpan.")
+                }
+
+                // Navigasi ke MainActivity setelah login berhasil
                 navigateToHome()
             }
             is Result.Error -> {
                 setLoadingState(false)
-                showToast(result.error ?: getString(R.string.login_failed))
+                showToast(result.error ?: getString(R.string.login_failed)) // Menampilkan pesan error jika login gagal
             }
         }
     }
-    private fun saveTokenToSharedPreferences(token: String) {
-        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("token", token)  // Menyimpan token
-        editor.apply()
-    }
-
 
     private fun setLoadingState(isLoading: Boolean) {
         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
@@ -105,7 +125,30 @@ class LoginActivity : AppCompatActivity() {
 
     private fun navigateToHome() {
         Log.d("LoginActivity", "Navigating to MainActivity")
-        startActivity(Intent(this, MainActivity::class.java))
-        finish()
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish() // Menutup LoginActivity setelah berhasil login
     }
+
+    // Fungsi untuk menyimpan token di SharedPreferences
+    private fun saveAuthToken(token: String) {
+        val sharedPreferences = getSharedPreferences("UserPrefs",MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("auth_token", token)
+        editor.apply()
+        Log.d("LoginActivity", "Token berhasil disimpan: $token")// Simpan token
+    }
+
+    // Fungsi untuk mendapatkan token dari SharedPreferences
+    private fun getAuthToken(): String? {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val token = sharedPreferences.getString("auth_token", null) // Mengambil token
+        if (token == null) {
+            Log.d("SharedPreferences", "Token tidak ditemukan")
+        } else {
+            Log.d("SharedPreferences", "Token ditemukan: $token")
+        }
+        return token
+    }
+
 }

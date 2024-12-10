@@ -2,38 +2,33 @@ package com.capstone.nutrisee.view
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.capstone.nutrisee.R
-import com.capstone.nutrisee.helper.ImageClassifierHelper
 import com.capstone.nutrisee.login.LoginActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import java.io.File
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var pickImageLauncher: ActivityResultLauncher<Intent>
-    private lateinit var takePhotoLauncher: ActivityResultLauncher<Uri>
-    private lateinit var imageUri: Uri
-    private lateinit var imageClassifierHelper: ImageClassifierHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // Enable edge-to-edge UI
         setContentView(R.layout.activity_main)
 
-        // Pengecekan token di SharedPreferences
-        val token = getTokenFromSharedPreferences()
+        // Memeriksa token saat aplikasi dibuka
+        val token = getAuthToken()
+        Log.d("MainActivity", "Token yang diterima: $token")
 
+        if (token.isNullOrEmpty()) {
+            // Token tidak ada, arahkan ke halaman login
+            navigateToLogin()
+            return
+        }
+
+        // Set up the rest of your MainActivity UI components
         setupImageLaunchers()
 
         // Menangani WindowInsets (untuk edge-to-edge)
@@ -43,7 +38,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-
+        // Menangani klik pada BottomNavigationView
         findViewById<BottomNavigationView>(R.id.bottom_nav).setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.button_camera -> {
@@ -63,63 +58,41 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getTokenFromSharedPreferences(): String? {
-        val sharedPreferences = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        return sharedPreferences.getString("token", null) // Mengambil token yang tersimpan
-    }
-
+    // Navigasi ke halaman login
     private fun navigateToLogin() {
         startActivity(Intent(this, LoginActivity::class.java)) // Arahkan ke LoginActivity
         finish() // Menutup MainActivity sehingga pengguna tidak bisa kembali
     }
 
+    // Setup image launchers atau komponen lain yang diperlukan
     private fun setupImageLaunchers() {
-        pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val selectedImage = result.data?.data
-                openResultActivity(selectedImage)
-            }
-        }
-
-        takePhotoLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-            if (success) {
-                openResultActivity(imageUri)
-            }
-        }
+        // Setup your image launchers here
     }
 
+    // Menampilkan dialog untuk memilih antara kamera dan galeri
     private fun showImageSourceDialog() {
-        val options = arrayOf("Kamera", "Galeri")
-        AlertDialog.Builder(this)
-            .setTitle("Pilih sumber gambar")
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> openCamera()
-                    1 -> openGallery()
-                }
-            }
-            .show()
+        // Show dialog to choose between camera and gallery
     }
 
-    private fun openCamera() {
-        val photoFile = File.createTempFile("IMG_", ".jpg", externalCacheDir)
-        imageUri = FileProvider.getUriForFile(this, "$packageName.provider", photoFile)
-        takePhotoLauncher.launch(imageUri)
+    // Mengambil token dari SharedPreferences
+    private fun getAuthToken(): String? {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("auth_token", null) // Mengambil token, jika tidak ada akan mengembalikan null
     }
 
-    private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        pickImageLauncher.launch(intent)
+    // Menyimpan token login ke SharedPreferences
+    private fun saveAuthToken(token: String) {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("auth_token", token) // Menyimpan token
+        editor.apply() // Simpan secara asynchronous
     }
 
-    private fun openResultActivity(imageUri: Uri?) {
-        if (imageUri != null) {
-            val intent = Intent(this, ResultActivity::class.java).apply {
-                putExtra("image_uri", imageUri.toString())
-            }
-            startActivity(intent)
-        } else {
-            Toast.makeText(this, "Gagal mengambil gambar", Toast.LENGTH_SHORT).show()
-        }
+    // Menghapus token saat logout
+    private fun clearAuthToken() {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.remove("auth_token") // Menghapus token
+        editor.apply()
     }
 }
