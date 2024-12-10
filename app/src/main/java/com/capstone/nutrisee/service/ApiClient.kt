@@ -1,4 +1,4 @@
-package com.capstone.nutrisee.network
+package com.capstone.nutrisee.service
 
 import com.capstone.nutrisee.service.ApiService
 import retrofit2.Retrofit

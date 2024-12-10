@@ -2,6 +2,8 @@ package com.capstone.nutrisee.service
 
 import DashboardResponse
 import com.capstone.nutrisee.data.model.BmiDataResponse
+import com.capstone.nutrisee.data.model.DetectFoodRequest
+import com.capstone.nutrisee.data.model.DetectFoodResponse
 import com.capstone.nutrisee.data.model.LoginRequest
 import com.capstone.nutrisee.data.model.LoginResponse
 import com.capstone.nutrisee.data.model.RegisterRequest
@@ -27,4 +29,10 @@ interface ApiService {
     suspend fun getDashboardData(
         @Header("Authorization") token: String
     ): Response<DashboardResponse>
+
+    @POST(ApiConfig.DETECT_FOOD_ENDPOINT)
+    suspend fun detectFood(
+        @Body request: DetectFoodRequest,
+        @Header("Authorization") token: String
+    ): Response<DetectFoodResponse>
 }
