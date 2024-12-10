@@ -14,7 +14,6 @@ class SessionManager(private val context: Context) {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
-    // Menyimpan token autentikasi
     fun saveAuthToken(token: String) {
         sharedPreferences.edit().apply {
             putString(TOKEN_KEY, token)
