@@ -1,19 +1,21 @@
 package com.capstone.nutrisee.service
 
+import DashboardResponse
 import com.capstone.nutrisee.data.model.BmiDataResponse
 import com.capstone.nutrisee.data.model.LoginRequest
 import com.capstone.nutrisee.data.model.LoginResponse
 import com.capstone.nutrisee.data.model.RegisterRequest
 import com.capstone.nutrisee.data.model.RegisterResponse
+import com.capstone.nutrisee.data.model.UserData
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
+import retrofit2.http.Header
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface ApiService {
 
-    @POST("login")
+    @POST("auth/login")
     suspend fun login(
         @Body request: LoginRequest
     ): Response<LoginResponse>
@@ -21,6 +23,8 @@ interface ApiService {
     @POST(ApiConfig.REGISTER_ENDPOINT)
     suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
 
-    @POST(ApiConfig.BMI_DATA_ENDPOINT)
-    suspend fun getBmiData(): Response<List<BmiDataResponse>>
+    @GET("users/data/dashboard")
+    suspend fun getDashboardData(
+        @Header("Authorization") token: String
+    ): Response<DashboardResponse>
 }

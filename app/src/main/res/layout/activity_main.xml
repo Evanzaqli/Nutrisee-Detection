@@ -51,6 +51,7 @@
             android:padding="16dp">
 
             <TextView
+                android:id="@+id/text_carbs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Carbohydrates: "
@@ -58,6 +59,7 @@
                 android:paddingBottom="8dp" />
 
             <TextView
+                android:id="@+id/text_protein"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Protein: "
@@ -65,6 +67,7 @@
                 android:paddingBottom="8dp" />
 
             <TextView
+                android:id="@+id/text_fat"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Fat: "
@@ -72,6 +75,7 @@
                 android:paddingBottom="8dp" />
 
             <TextView
+                android:id="@+id/text_fiber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Fiber: "
@@ -79,15 +83,25 @@
                 android:paddingBottom="8dp" />
 
             <TextView
+            android:id="@+id/text_bmi_result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BMI: "
+            android:textSize="18sp" android:paddingBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/text_calories"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Calories: "
                 android:textStyle="bold"
                 android:textSize="24sp" />
 
+
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
+
 
     <!-- BottomNavigationView untuk navigasi -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

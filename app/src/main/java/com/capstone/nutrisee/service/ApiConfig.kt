@@ -7,11 +7,13 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class ApiConfig {
     companion object {
-        private const val BASE_URL = "https://node-service-dot-capstone-nutrisee-442807.et.r.appspot.com/auth/"
+        private const val BASE_URL = "https://node-service-dot-capstone-nutrisee-442807.et.r.appspot.com/"
 
-        const val LOGIN_ENDPOINT = "${BASE_URL}login"
-        const val REGISTER_ENDPOINT = "${BASE_URL}register"
-        const val BMI_DATA_ENDPOINT = "${BASE_URL}bmi"
+        const val LOGIN_ENDPOINT = "${BASE_URL}auth/login"
+        const val REGISTER_ENDPOINT = "${BASE_URL}auth/register"
+        const val USER_DATA_ENDPOINT = "${BASE_URL}users/data"
+        const val USER_DATA_DASHBOARD_ENDPOINT = "${BASE_URL}users/data/dashboard"
+
 
         fun getApiService(): ApiService {
             val loggingInterceptor =
@@ -19,6 +21,7 @@ class ApiConfig {
             val client = OkHttpClient.Builder()
                 .addInterceptor(loggingInterceptor)
                 .build()
+
             val retrofit = Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())

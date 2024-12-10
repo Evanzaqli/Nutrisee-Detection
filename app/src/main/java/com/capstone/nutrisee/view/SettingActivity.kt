@@ -1,102 +1,136 @@
 package com.capstone.nutrisee.view
 
+
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.capstone.nutrisee.R
-import com.capstone.nutrisee.data.model.BmiDataResponse
-import com.capstone.nutrisee.service.ApiConfig
-import com.capstone.nutrisee.service.ApiService
 import com.capstone.nutrisee.databinding.ActivitySettingBinding
 import com.capstone.nutrisee.login.LoginActivity
-import com.capstone.nutrisee.login.OnboardingActivity
-import kotlinx.coroutines.launch
-import retrofit2.Response
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import org.json.JSONObject
+import java.io.IOException
 
 class SettingActivity : AppCompatActivity() {
 
-    private lateinit var apiService: ApiService
     private lateinit var binding: ActivitySettingBinding
-    private lateinit var sessionManager: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        apiService = ApiConfig.getApiService()
-        sessionManager = SessionManager(this)
+        // Ambil token dari SharedPreferences
+        val token = getAuthToken()
+        if (token.isNullOrEmpty()) {
+            Log.e("SettingActivity", "Token tidak ditemukan, mengarahkan ke login")
+            redirectToLogin()
+        } else {
+            Log.d("SettingActivity", "Token ditemukan: $token")
+        }
 
-        setupListeners()
-    }
-
-    private fun setupListeners() {
         binding.btnConfirm.setOnClickListener {
-            val age = binding.editAge.text.toString().toIntOrNull()
-            val height = binding.editHeight.text.toString().toIntOrNull()
-            val weight = binding.editWeight.text.toString().toIntOrNull()
-
-            val selectedGender = if (binding.radioFemale.isChecked) "Female" else "Male"
-            val selectedGoal = when {
-                binding.radioMaintain.isChecked -> "Maintain Weight"
-                binding.radioLoss.isChecked -> "Lose Weight"
-                binding.radioGain.isChecked -> "Gain Weight"
-                else -> "Unknown"
-            }
-
-            if (age != null && height != null && weight != null) {
-                sessionManager.saveUserSession(age, height, weight, selectedGender, selectedGoal)
-            }
-
-            getBmiData()
+            sendUserDataToApi(token)
         }
 
         binding.btnLogout.setOnClickListener {
-            showLogoutConfirmationDialog()
+            clearAuthToken()
+            redirectToLogin()
         }
     }
 
-    private fun showLogoutConfirmationDialog() {
-        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
-        builder.setTitle("Konfirmasi Logout")
-        builder.setMessage("Apakah Anda yakin ingin keluar?")
-        builder.setPositiveButton("Ya") { _, _ ->
-            performLogout()
+    private fun sendUserDataToApi(token: String?) {
+        if (token.isNullOrEmpty()) {
+            Toast.makeText(this, "Token tidak valid", Toast.LENGTH_SHORT).show()
+            return
         }
-        builder.setNegativeButton("Batal") { dialog, _ ->
-            dialog.dismiss()
+
+        // Disable tombol untuk mencegah klik berulang
+        binding.btnConfirm.isEnabled = false
+
+        val jsonBody = """
+        {
+            "age": 25,
+            "height": 170,
+            "weight": 70,
+            "gender": "Male",
+            "goal": "Maintain Weight"
         }
-        builder.create().show()
+    """.trimIndent()
+
+        val requestBody = RequestBody.create(
+            "application/json; charset=utf-8".toMediaTypeOrNull(),
+            jsonBody
+        )
+
+        val request = Request.Builder()
+            .url("https://your-api-url.com/users/data")
+            .addHeader("Authorization", "Bearer $token")
+            .post(requestBody)
+            .build()
+
+        val client = OkHttpClient()
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("SettingActivity", "Request failed", e)
+                runOnUiThread {
+                    binding.btnConfirm.isEnabled = true
+                    Toast.makeText(this@SettingActivity, "Gagal mengirim data", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                runOnUiThread {
+                    binding.btnConfirm.isEnabled = true
+                    if (response.isSuccessful) {
+                        Log.d("SettingActivity", "Data berhasil dikirim")
+                        Toast.makeText(this@SettingActivity, "Data berhasil dikirim", Toast.LENGTH_SHORT).show()
+
+                        // Pindah ke MainActivity setelah sukses
+                        navigateToMainActivity()
+                    } else {
+                        Log.e("SettingActivity", "Gagal mengirim data: ${response.code}")
+                        Toast.makeText(this@SettingActivity, "Gagal mengirim data", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
     }
 
-    private fun performLogout() {
-        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-        sharedPreferences.edit().clear().apply() // Menghapus token
-
-        val intent = Intent(this, OnboardingActivity::class.java)
+    // Menambahkan fungsi navigateToMainActivity
+    private fun navigateToMainActivity() {
+        val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
+        finish() // Menutup SettingActivity setelah berpindah
+    }
 
+    private fun getAuthToken(): String? {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val token = sharedPreferences.getString("auth_token", null) // Mengambil token
+        if (token == null) {
+            Log.d("SharedPreferences", "Token tidak ditemukan")
+        } else {
+            Log.d("SharedPreferences", "Token ditemukan: $token")
+        }
+        return token
+    }
+
+    private fun clearAuthToken() {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.remove("auth_token").apply()
+        Log.d("SettingActivity", "Token berhasil dihapus")
+    }
+
+    private fun redirectToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
         finish()
     }
-
-    private fun getBmiData() {
-        lifecycleScope.launch {
-            try {
-                val response: Response<List<BmiDataResponse>> = apiService.getBmiData()
-                if (response.isSuccessful) {
-                    val bmiData = response.body()
-                    bmiData?.let {
-                        // Proses data jika diperlukan
-                    }
-                } else {
-                    // Tangani jika gagal
-                }
-            } catch (e: Exception) {
-                // Tangani jika terjadi error
-            }
-        }
-    }
 }
+

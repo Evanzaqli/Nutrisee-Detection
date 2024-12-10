@@ -126,6 +126,7 @@ class LoginActivity : AppCompatActivity() {
     private fun navigateToHome() {
         Log.d("LoginActivity", "Navigating to MainActivity")
         val intent = Intent(this, MainActivity::class.java)
+
         startActivity(intent)
         finish() // Menutup LoginActivity setelah berhasil login
     }
