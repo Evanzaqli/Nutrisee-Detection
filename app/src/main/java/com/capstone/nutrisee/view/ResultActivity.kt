@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.capstone.nutrisee.R
 import com.capstone.nutrisee.adapter.NutritionResultAdapter
-import com.capstone.nutrisee.data.model.DetectFoodRequest
 import com.capstone.nutrisee.data.model.NutritionInfo
 import com.capstone.nutrisee.login.LoginActivity
 import com.capstone.nutrisee.service.ApiConfig
@@ -54,7 +53,7 @@ class ResultActivity : AppCompatActivity() {
         val token = getAuthToken()
 
         if (token.isNullOrEmpty()) {
-            Toast.makeText(this, "Token autentikasi tidak ditemukan, silakan login ulang.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Authentication token not found, please re-login.", Toast.LENGTH_SHORT).show()
             navigateToLogin()
             return
         }
@@ -91,38 +90,41 @@ class ResultActivity : AppCompatActivity() {
     }
 
     private fun callDetectFoodApi(imageFile: File, token: String) {
-        val requestBody = RequestBody.create("image/jpeg".toMediaType(), imageFile)
+        val mimeType = "image/jpeg"
+        val requestBody = RequestBody.create(mimeType.toMediaType(), imageFile)
         val filePart = MultipartBody.Part.createFormData("file", imageFile.name, requestBody)
 
         lifecycleScope.launch {
             showLoading(true)
             try {
                 val apiService = ApiConfig.getDetectFoodApiService()
-
                 val response = withContext(Dispatchers.IO) {
-                    apiService.detectFood(DetectFoodRequest(filePart), "Bearer $token")
+                    apiService.detectFood(filePart, "Bearer $token")
                 }
 
                 if (response.isSuccessful) {
                     val responseData = response.body()
-                    Log.d("ResultActivity", "Response Success: $responseData")
                     if (responseData != null) {
+                        val detectedFoods = responseData.detectedFoods
                         val nutritionInfo = responseData.nutritionInfo
+
+                        displayDetectedFoods(detectedFoods)
                         showNutritionResults(nutritionInfo)
                     } else {
-                        Toast.makeText(this@ResultActivity, "Tidak ada data nutrisi.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ResultActivity, "Nutrition data not available.", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.e("ResultActivity", "Response Failed: Code ${response.code()}, Error $errorBody")
-                    val errorMessage = errorBody?.let { parseErrorMessage(it) } ?: "Kesalahan tidak diketahui"
-                    Toast.makeText(this@ResultActivity, "Kesalahan API: $errorMessage", Toast.LENGTH_SHORT).show()
+                    Log.e("API Error", "Response Code: ${response.code()}, Error: $errorBody")
+                    val errorMessage = parseErrorMessage(errorBody ?: "")
+                    Toast.makeText(this@ResultActivity, "API Error: $errorMessage", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e("ResultActivity", "API Call Failed: ${e.message}", e)
-                Toast.makeText(this@ResultActivity, "Gagal mengambil data: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e("ResultActivity", "Failed to process API: ${e.message}", e)
+                Toast.makeText(this@ResultActivity, "Failed to contact server: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                showLoading(false)
             }
-            showLoading(false)
         }
     }
 
@@ -136,18 +138,22 @@ class ResultActivity : AppCompatActivity() {
         }
     }
 
+    private fun displayDetectedFoods(detectedFoods: List<String>) {
+        Toast.makeText(this, "Detected foods: ${detectedFoods.joinToString(", ")}", Toast.LENGTH_LONG).show()
+    }
+
     private fun showNutritionResults(nutritionData: List<NutritionInfo>) {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewNutrients)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         val resultsList = nutritionData.flatMap { info ->
             listOf(
-                "Calories (kcal)" to info.calories.toFloat(),
-                "Protein (g)" to info.protein.toFloat(),
-                "Carbohydrates (g)" to info.carbohydrates.toFloat(),
-                "Fat (g)" to info.fat.toFloat(),
-                "Fiber (g)" to info.fiber.toFloat()
-            ).map { it as Pair<String, Float> }
+                "Calories (kcal)" to info.calories,
+                "Protein (g)" to info.protein,
+                "Carbohydrates (g)" to info.carbohydrates,
+                "Fat (g)" to info.fat,
+                "Fiber (g)" to info.fiber
+            ).map { it }
         }
 
         recyclerView.adapter = NutritionResultAdapter("Nutrition Results", resultsList)

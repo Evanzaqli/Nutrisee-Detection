@@ -8,3 +8,19 @@ data class DetectFoodResponse(
     @SerializedName("nutrition_info")
     val nutritionInfo: List<NutritionInfo>
 )
+
+data class NutritionInfo(
+    @SerializedName("class")
+    val foodClass: String,
+    @SerializedName("Calories (kcal)")
+    val calories: Float,
+    @SerializedName("Protein (g)")
+    val protein: Float,
+    @SerializedName("Carbohydrates (g)")
+    val carbohydrates: Float,
+    @SerializedName("Fat (g)")
+    val fat: Float,
+    @SerializedName("Fiber (g)")
+    val fiber: Float
+)
+

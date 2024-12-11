@@ -34,9 +34,9 @@ class ApiConfig {
 
         fun getDetectFoodApiService(): ApiService {
             val client = OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS) // Timeout koneksi
-                .readTimeout(30, TimeUnit.SECONDS)    // Timeout baca
-                .writeTimeout(30, TimeUnit.SECONDS)   // Timeout tulis
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
                 .build()
 
             val retrofit = Retrofit.Builder()

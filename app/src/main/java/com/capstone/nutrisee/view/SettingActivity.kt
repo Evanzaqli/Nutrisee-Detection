@@ -67,7 +67,7 @@ class SettingActivity : AppCompatActivity() {
         )
 
         val request = Request.Builder()
-            .url("https://your-api-url.com/users/data")
+            .url("https://node-service-dot-capstone-nutrisee-442807.et.r.appspot.com/users/data")
             .addHeader("Authorization", "Bearer $token")
             .post(requestBody)
             .build()
