@@ -10,7 +10,7 @@
 
     <!-- ProgressBar untuk indikator loading -->
     <ProgressBar
-        android:id="@+id/progress_bar"
+        android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
@@ -81,13 +81,6 @@
                 android:text="Fiber: "
                 android:textSize="18sp"
                 android:paddingBottom="8dp" />
-
-            <TextView
-            android:id="@+id/text_bmi_result"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BMI: "
-            android:textSize="18sp" android:paddingBottom="8dp"/>
 
             <TextView
                 android:id="@+id/text_calories"

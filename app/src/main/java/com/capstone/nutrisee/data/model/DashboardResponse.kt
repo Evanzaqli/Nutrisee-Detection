@@ -1,8 +1,17 @@
 data class DashboardResponse(
-    val carbohydrates: String?,
-    val protein: String?,
-    val fat: String?,
-    val fiber: String?,
-    val bmi: String?,
-    val calories: String?
-)
+    val status: String,
+    val message: String,
+    val data: Data
+) {
+    data class Data(
+        val dailyNeeds: DailyNeeds
+    ) {
+        data class DailyNeeds(
+            val calories: Int,
+            val protein: Int,
+            val carbohydrates: Int,
+            val fat: Int,
+            val fiber: Int
+        )
+    }
+}

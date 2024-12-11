@@ -1,6 +1,5 @@
 package com.capstone.nutrisee.view
 
-
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -51,25 +50,41 @@ class SettingActivity : AppCompatActivity() {
         // Disable tombol untuk mencegah klik berulang
         binding.btnConfirm.isEnabled = false
 
-        val jsonBody = """
-        {
-            "age": 25,
-            "height": 170,
-            "weight": 70,
-            "gender": "Male",
-            "goal": "Maintain Weight"
-        }
-    """.trimIndent()
+        // Data pengguna yang akan dikirim
+        val age = 25
+        val gender = "male"
+        val height = 170
+        val weight = 70
+        val targetWeight = "maintain weight"
+
+        // Log setiap field yang akan dikirim
+        Log.d("SettingActivity", "Preparing data to send:")
+        Log.d("SettingActivity", "Age: $age")
+        Log.d("SettingActivity", "Gender: $gender")
+        Log.d("SettingActivity", "Height: $height")
+        Log.d("SettingActivity", "Weight: $weight")
+        Log.d("SettingActivity", "Target Weight: $targetWeight")
+
+        // Membuat JSON Body
+        val jsonBody = JSONObject()
+        jsonBody.put("age", age)
+        jsonBody.put("gender", gender)
+        jsonBody.put("height", height)
+        jsonBody.put("weight", weight)
+        jsonBody.put("targetWeight", targetWeight)
+
+        // Log JSON Body yang akan dikirim
+        Log.d("SettingActivity", "JSON Body: ${jsonBody.toString()}")
 
         val requestBody = RequestBody.create(
             "application/json; charset=utf-8".toMediaTypeOrNull(),
-            jsonBody
+            jsonBody.toString()
         )
 
         val request = Request.Builder()
             .url("https://node-service-dot-capstone-nutrisee-442807.et.r.appspot.com/users/data")
-            .addHeader("Authorization", "Bearer $token")
             .post(requestBody)
+            .addHeader("Authorization", "Bearer $token")
             .build()
 
         val client = OkHttpClient()
@@ -86,13 +101,14 @@ class SettingActivity : AppCompatActivity() {
                 runOnUiThread {
                     binding.btnConfirm.isEnabled = true
                     if (response.isSuccessful) {
-                        Log.d("SettingActivity", "Data berhasil dikirim")
+                        Log.d("SettingActivity", "Data berhasil dikirim: ${response.body?.string()}")
                         Toast.makeText(this@SettingActivity, "Data berhasil dikirim", Toast.LENGTH_SHORT).show()
 
                         // Pindah ke MainActivity setelah sukses
                         navigateToMainActivity()
                     } else {
                         Log.e("SettingActivity", "Gagal mengirim data: ${response.code}")
+                        Log.e("SettingActivity", "Response body: ${response.body?.string()}")
                         Toast.makeText(this@SettingActivity, "Gagal mengirim data", Toast.LENGTH_SHORT).show()
                     }
                 }

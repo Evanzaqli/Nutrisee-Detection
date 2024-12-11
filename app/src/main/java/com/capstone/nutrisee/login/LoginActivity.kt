@@ -1,5 +1,6 @@
 package com.capstone.nutrisee.login
 
+
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -13,6 +14,7 @@ import com.capstone.nutrisee.data.Result
 import com.capstone.nutrisee.data.model.LoginResponse
 import com.capstone.nutrisee.databinding.ActivityLoginBinding
 import com.capstone.nutrisee.view.MainActivity
+
 
 class LoginActivity : AppCompatActivity() {
 
