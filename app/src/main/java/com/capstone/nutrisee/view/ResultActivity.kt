@@ -90,9 +90,9 @@ class ResultActivity : AppCompatActivity() {
     }
 
     private fun callDetectFoodApi(imageFile: File, token: String) {
-        val mimeType = "image/jpeg"
-        val requestBody = RequestBody.create(mimeType.toMediaType(), imageFile)
+        val requestBody = RequestBody.create("image/jpeg".toMediaType(), imageFile)
         val filePart = MultipartBody.Part.createFormData("file", imageFile.name, requestBody)
+
 
         lifecycleScope.launch {
             showLoading(true)
@@ -146,17 +146,7 @@ class ResultActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewNutrients)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val resultsList = nutritionData.flatMap { info ->
-            listOf(
-                "Calories (kcal)" to info.calories,
-                "Protein (g)" to info.protein,
-                "Carbohydrates (g)" to info.carbohydrates,
-                "Fat (g)" to info.fat,
-                "Fiber (g)" to info.fiber
-            ).map { it }
-        }
-
-        recyclerView.adapter = NutritionResultAdapter("Nutrition Results", resultsList)
+        recyclerView.adapter = NutritionResultAdapter(nutritionData)
         Log.d("ResultActivity", "Nutrition results displayed successfully.")
     }
 

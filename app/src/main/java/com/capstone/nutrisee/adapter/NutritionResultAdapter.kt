@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.capstone.nutrisee.R
+import com.capstone.nutrisee.data.model.NutritionInfo
 
 class NutritionResultAdapter(
-    private val foodName: String,
-    private val nutritionList: List<Pair<String, Float>>
+    private val nutritionInfoList: List<NutritionInfo>
 ) : RecyclerView.Adapter<NutritionResultAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -28,18 +28,17 @@ class NutritionResultAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.foodNameTextView.text = foodName
+        if (nutritionInfoList.isNotEmpty()) {
+            val nutritionInfo = nutritionInfoList[position]
 
-        nutritionList.forEach { (name, value) ->
-            when (name) {
-                "Protein" -> holder.proteinValueTextView.text = "Protein: ${value} g"
-                "Carbohydrate" -> holder.carboValueTextView.text = "Carbohydrate: ${value} g"
-                "Fat" -> holder.fatValueTextView.text = "Fat: ${value} g"
-                "Fiber" -> holder.fiberValueTextView.text = "Fiber: ${value} g"
-                "Calories" -> holder.caloriesValueTextView.text = "Calories: ${value} kcal"
-            }
+            holder.foodNameTextView.text = nutritionInfo.foodClass
+            holder.proteinValueTextView.text = "Protein: ${nutritionInfo.protein} g"
+            holder.carboValueTextView.text = "Carbohydrates: ${nutritionInfo.carbohydrates} g"
+            holder.fatValueTextView.text = "Fat: ${nutritionInfo.fat} g"
+            holder.fiberValueTextView.text = "Fiber: ${nutritionInfo.fiber} g"
+            holder.caloriesValueTextView.text = "Calories: ${nutritionInfo.calories} kcal"
         }
     }
 
-    override fun getItemCount() = 1
+    override fun getItemCount() = nutritionInfoList.size
 }
