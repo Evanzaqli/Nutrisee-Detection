@@ -1,8 +1,10 @@
 package com.capstone.nutrisee.view
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -12,18 +14,24 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.capstone.nutrisee.R
 import com.capstone.nutrisee.databinding.ActivityMainBinding
 import com.capstone.nutrisee.login.OnboardingActivity
-
+import com.capstone.nutrisee.utils.reduceFileImage
+import com.capstone.nutrisee.utils.uriToFile
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var cameraLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var galleryLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
+    private var currentPhotoFile: File? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +40,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val token = getAuthToken()
-        Log.d("MainActivity", "Received token: $token")
+        Log.d("MainActivity", "Token yang diterima: $token")
 
         if (token.isNullOrEmpty()) {
             navigateToLogin()
             return
         }
 
+        // Menangani WindowInsets (untuk edge-to-edge)
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -88,17 +97,37 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Select Image Source")
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> openCamera()
+                    0 -> checkCameraPermission()
                     1 -> openGallery()
                 }
             }
-            .setNegativeButton("Cancelled", null)
+            .setNegativeButton("Cancel", null)
             .show()
     }
 
+    private fun checkCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openCamera()
+        } else {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST_CODE)
+        }
+    }
+
     private fun openCamera() {
-        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        cameraLauncher.launch(cameraIntent)
+        try {
+            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            currentPhotoFile = File.createTempFile("temp_image", ".jpg", externalCacheDir)
+
+            val photoUri = currentPhotoFile?.let { file ->
+                FileProvider.getUriForFile(this, "${packageName}.provider", file)
+            }
+
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+            cameraLauncher.launch(cameraIntent)
+        } catch (e: Exception) {
+            Log.e("CameraError", "Error opening camera: ${e.message}", e)
+            Toast.makeText(this, "Error opening camera", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun openGallery() {
@@ -108,19 +137,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleCameraResult(result: ActivityResult) {
         if (result.resultCode == Activity.RESULT_OK) {
-            val photoUri = result.data?.data
-            navigateToResultActivity(photoUri)
+            currentPhotoFile?.let { file ->
+                val reducedFile = file.reduceFileImage()
+                navigateToResultActivity(Uri.fromFile(reducedFile))
+            } ?: Toast.makeText(this, "Image not found", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, "Camera Cancelled", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Camera Canceled", Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun handleGalleryResult(result: ActivityResult) {
         if (result.resultCode == Activity.RESULT_OK) {
             val selectedImageUri = result.data?.data
-            navigateToResultActivity(selectedImageUri)
+            selectedImageUri?.let { uri ->
+                val file = uriToFile(uri, this).reduceFileImage()
+                navigateToResultActivity(Uri.fromFile(file))
+            } ?: Toast.makeText(this, "Image not found", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, "Gallery Cancelled", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Gallery Canceled", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -136,7 +170,6 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Image not found", Toast.LENGTH_SHORT).show()
         }
     }
-
 
     private fun getAuthToken(): String? {
         val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
@@ -155,5 +188,20 @@ class MainActivity : AppCompatActivity() {
         val editor = sharedPreferences.edit()
         editor.remove("auth_token")
         editor.apply()
+    }
+
+    companion object {
+        private const val CAMERA_REQUEST_CODE = 101
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == CAMERA_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera()
+            } else {
+                Toast.makeText(this, "Izin kamera ditolak", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
