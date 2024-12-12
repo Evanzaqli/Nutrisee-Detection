@@ -115,10 +115,10 @@ class MainActivity : AppCompatActivity() {
 
                         // Update UI
                         with(binding) {0
-                            textCarbs.text = "Carbohydrates: ${nutritionHistory.remainingCarbs} / ${nutritionHistory.targetCarbs}"
-                            textProtein.text = "Protein: ${nutritionHistory.remainingProtein} / ${nutritionHistory.targetProtein}"
-                            textFat.text = "Fat: ${nutritionHistory.remainingFat} / ${nutritionHistory.targetFat}"
-                            textFiber.text = "Fiber: ${nutritionHistory.remainingFiber} / ${nutritionHistory.targetFiber}"
+                            textCarbs.text = "Carbohydrates: ${nutritionHistory.remainingCarbs.toInt()} / ${nutritionHistory.targetCarbs.toInt()}"
+                            textProtein.text = "Protein: ${nutritionHistory.remainingProtein.toInt()} / ${nutritionHistory.targetProtein.toInt()}"
+                            textFat.text = "Fat: ${nutritionHistory.remainingFat.toInt()} / ${nutritionHistory.targetFat.toInt()}"
+                            textFiber.text = "Fiber: ${nutritionHistory.remainingFiber.toInt()} / ${nutritionHistory.targetFiber.toInt()}"
                             textCalories.text = "Calories: ${nutritionHistory.remainingCalories.toInt()} / ${nutritionHistory.targetCalories.toInt()} kcal"
                         }
                     } else {
