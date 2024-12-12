@@ -1,5 +1,6 @@
 package com.capstone.nutrisee.view
 
+import DashboardResponse
 import android.Manifest
 import android.app.Activity
 import android.content.Context
@@ -9,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,12 +21,22 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.capstone.nutrisee.R
 import com.capstone.nutrisee.databinding.ActivityMainBinding
 import com.capstone.nutrisee.login.OnboardingActivity
+import com.capstone.nutrisee.service.ApiService
 import com.capstone.nutrisee.utils.reduceFileImage
 import com.capstone.nutrisee.utils.uriToFile
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,7 +56,9 @@ class MainActivity : AppCompatActivity() {
 
         if (token.isNullOrEmpty()) {
             navigateToLogin()
-            return
+        } else {
+            // Jika token ada, langsung panggil fetchDashboardData
+            fetchDashboardData(token)
         }
 
         // Menangani WindowInsets (untuk edge-to-edge)
@@ -75,6 +89,59 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+    private fun fetchDashboardData(token: String) {
+        Log.d("MainActivity", "Memulai pemanggilan API dengan token: $token")
+
+        // Tampilkan ProgressBar saat data sedang dimuat
+        binding.progressBar.visibility = View.VISIBLE
+        binding.textError.visibility = View.GONE
+
+        lifecycleScope.launch {
+            try {
+                val retrofit = Retrofit.Builder()
+                    .baseUrl("https://node-service-dot-capstone-nutrisee-442807.et.r.appspot.com/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build()
+
+                val apiService = retrofit.create(ApiService::class.java)
+
+                val response = apiService.getDashboardData("Bearer $token")
+                binding.progressBar.visibility = View.GONE
+
+                if (response.isSuccessful) {
+                    val nutritionHistory = response.body()?.data?.nutritionHistory
+                    if (nutritionHistory != null) {
+                        Log.d("API Response", "Data berhasil diambil: $nutritionHistory")
+
+                        // Update UI
+                        with(binding) {
+                            textCarbs.text = "Carbohydrates: ${nutritionHistory.targetCarbs} g"
+                            textProtein.text = "Protein: ${nutritionHistory.targetProtein} g"
+                            textFat.text = "Fat: ${nutritionHistory.targetFat} g"
+                            textFiber.text = "Fiber: ${nutritionHistory.targetFiber} g"
+                            textCalories.text = "Calories: ${nutritionHistory.targetCalories} kcal"
+                        }
+                    } else {
+                        Log.e("MainActivity", "Data tidak ditemukan.")
+                        binding.textError.text = "Data tidak ditemukan."
+                        binding.textError.visibility = View.VISIBLE
+                    }
+                } else {
+                    Log.e("MainActivity", "Gagal mendapatkan data. Status: ${response.code()}")
+                    binding.textError.text = "Gagal mendapatkan data. Status: ${response.code()}"
+                    binding.textError.visibility = View.VISIBLE
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Kesalahan jaringan: ${e.message}", e)
+                binding.progressBar.visibility = View.GONE
+                binding.textError.text = "Kesalahan jaringan: ${e.message}"
+                binding.textError.visibility = View.VISIBLE
+            }
+        }
+    }
+
+
+
 
     private fun navigateToLogin() {
         startActivity(Intent(this, OnboardingActivity::class.java))

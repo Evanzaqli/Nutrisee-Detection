@@ -14,6 +14,7 @@ import com.capstone.nutrisee.data.Result
 import com.capstone.nutrisee.data.model.LoginResponse
 import com.capstone.nutrisee.databinding.ActivityLoginBinding
 import com.capstone.nutrisee.view.MainActivity
+import com.capstone.nutrisee.view.SettingActivity
 
 
 class LoginActivity : AppCompatActivity() {
@@ -127,7 +128,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun navigateToHome() {
         Log.d("LoginActivity", "Navigating to MainActivity")
-        val intent = Intent(this, MainActivity::class.java)
+        val intent = Intent(this, SettingActivity::class.java)
 
         startActivity(intent)
         finish() // Menutup LoginActivity setelah berhasil login
