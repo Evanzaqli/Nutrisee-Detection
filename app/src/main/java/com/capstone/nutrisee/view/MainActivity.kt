@@ -1,6 +1,7 @@
 package com.capstone.nutrisee.view
 
 import DashboardResponse
+import NutritionHistory
 import android.Manifest
 import android.app.Activity
 import android.content.Context
@@ -14,6 +15,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -21,6 +23,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.capstone.nutrisee.R
 import com.capstone.nutrisee.databinding.ActivityMainBinding
@@ -44,9 +48,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cameraLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var galleryLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private var currentPhotoFile: File? = null
+    private lateinit var dashboardViewModel: DashboardViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val factory = DashboardViewModelFactory(applicationContext)
+        dashboardViewModel = ViewModelProvider(this, factory).get(DashboardViewModel::class.java)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -57,8 +65,15 @@ class MainActivity : AppCompatActivity() {
         if (token.isNullOrEmpty()) {
             navigateToLogin()
         } else {
-            // Jika token ada, langsung panggil fetchDashboardData
-            fetchDashboardData(token)
+            // Mengamati LiveData yang ada di ViewModel
+            dashboardViewModel.nutritionHistory.observe(this, Observer { nutritionHistory ->
+                if (nutritionHistory != null) {
+                    updateUI(nutritionHistory)
+                }
+            })
+
+            // Memanggil fetchDashboardData untuk memuat data awal
+            dashboardViewModel.fetchDashboardData(token)
         }
 
         // Menangani WindowInsets (untuk edge-to-edge)
@@ -89,54 +104,16 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-    private fun fetchDashboardData(token: String) {
-        Log.d("MainActivity", "Memulai pemanggilan API dengan token: $token")
+    private var lastNutritionHistory: NutritionHistory? = null
 
-        // Tampilkan ProgressBar saat data sedang dimuat
-        binding.progressBar.visibility = View.VISIBLE
-        binding.textError.visibility = View.GONE
 
-        lifecycleScope.launch {
-            try {
-                val retrofit = Retrofit.Builder()
-                    .baseUrl("https://node-service-dot-capstone-nutrisee-442807.et.r.appspot.com/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build()
-
-                val apiService = retrofit.create(ApiService::class.java)
-
-                val response = apiService.getDashboardData("Bearer $token")
-                binding.progressBar.visibility = View.GONE
-
-                if (response.isSuccessful) {
-                    val nutritionHistory = response.body()?.data?.nutritionHistory
-                    if (nutritionHistory != null) {
-                        Log.d("API Response", "Data berhasil diambil: $nutritionHistory")
-
-                        // Update UI
-                        with(binding) {0
-                            textCarbs.text = "Carbohydrates: ${nutritionHistory.remainingCarbs.toInt()} / ${nutritionHistory.targetCarbs.toInt()}"
-                            textProtein.text = "Protein: ${nutritionHistory.remainingProtein.toInt()} / ${nutritionHistory.targetProtein.toInt()}"
-                            textFat.text = "Fat: ${nutritionHistory.remainingFat.toInt()} / ${nutritionHistory.targetFat.toInt()}"
-                            textFiber.text = "Fiber: ${nutritionHistory.remainingFiber.toInt()} / ${nutritionHistory.targetFiber.toInt()}"
-                            textCalories.text = "Calories: ${nutritionHistory.remainingCalories.toInt()} / ${nutritionHistory.targetCalories.toInt()} kcal"
-                        }
-                    } else {
-                        Log.e("MainActivity", "Data tidak ditemukan.")
-                        binding.textError.text = "Data tidak ditemukan."
-                        binding.textError.visibility = View.VISIBLE
-                    }
-                } else {
-                    Log.e("MainActivity", "Gagal mendapatkan data. Status: ${response.code()}")
-                    binding.textError.text = "Gagal mendapatkan data. Status: ${response.code()}"
-                    binding.textError.visibility = View.VISIBLE
-                }
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Kesalahan jaringan: ${e.message}", e)
-                binding.progressBar.visibility = View.GONE
-                binding.textError.text = "Kesalahan jaringan: ${e.message}"
-                binding.textError.visibility = View.VISIBLE
-            }
+    private fun updateUI(nutritionHistory: NutritionHistory) {
+        with(binding) {
+            textCarbs.text = "Carbohydrates: ${nutritionHistory.remainingCarbs.toInt()} / ${nutritionHistory.targetCarbs.toInt()}"
+            textProtein.text = "Protein: ${nutritionHistory.remainingProtein.toInt()} / ${nutritionHistory.targetProtein.toInt()}"
+            textFat.text = "Fat: ${nutritionHistory.remainingFat.toInt()} / ${nutritionHistory.targetFat.toInt()}"
+            textFiber.text = "Fiber: ${nutritionHistory.remainingFiber.toInt()} / ${nutritionHistory.targetFiber.toInt()}"
+            textCalories.text = "Calories: ${nutritionHistory.remainingCalories.toInt()} / ${nutritionHistory.targetCalories.toInt()} kcal"
         }
     }
 
