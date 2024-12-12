@@ -9,8 +9,10 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -144,10 +146,23 @@ class ResultActivity : AppCompatActivity() {
 
     private fun showNutritionResults(nutritionData: List<NutritionInfo>) {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewNutrients)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        val totalCaloriesTextView = findViewById<TextView>(R.id.textResult)
+        val cardViewResult = findViewById<CardView>(R.id.cardViewResult)
 
+        cardViewResult.visibility = View.VISIBLE
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = NutritionResultAdapter(nutritionData)
-        Log.d("ResultActivity", "Nutrition results displayed successfully.")
+
+        var totalCalories = 0f
+        for (nutritionInfo in nutritionData) {
+            totalCalories += nutritionInfo.calories
+        }
+
+        totalCaloriesTextView.text = "Total Kalori: ${String.format("%.1f", totalCalories)} kkal"
+
+        Log.d("ResultActivity", "Total Calories: $totalCalories")
+        Log.d("ResultActivity", "CardView Visibility: ${cardViewResult.visibility}")
     }
 
     private fun getAuthToken(): String? {

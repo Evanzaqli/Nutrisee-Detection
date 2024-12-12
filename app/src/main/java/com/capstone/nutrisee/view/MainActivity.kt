@@ -16,34 +16,29 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.capstone.nutrisee.R
 import com.capstone.nutrisee.databinding.ActivityMainBinding
-import com.capstone.nutrisee.login.LoginActivity
 import com.capstone.nutrisee.login.OnboardingActivity
 
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding // View Binding
+    private lateinit var binding: ActivityMainBinding
     private lateinit var cameraLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var galleryLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Menggunakan View Binding untuk mengakses layout
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Memeriksa token saat aplikasi dibuka
         val token = getAuthToken()
-        Log.d("MainActivity", "Token yang diterima: $token")
+        Log.d("MainActivity", "Received token: $token")
 
         if (token.isNullOrEmpty()) {
-            // Token tidak ada, arahkan ke halaman login
             navigateToLogin()
             return
         }
 
-        // Menangani WindowInsets (untuk edge-to-edge)
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -72,7 +67,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    // Navigasi ke halaman login
     private fun navigateToLogin() {
         startActivity(Intent(this, OnboardingActivity::class.java))
         finish()
@@ -89,16 +83,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showImageSourceDialog() {
-        val options = arrayOf("Kamera", "Galeri")
+        val options = arrayOf("Camera", "Gallery")
         AlertDialog.Builder(this)
-            .setTitle("Pilih Sumber Gambar")
+            .setTitle("Select Image Source")
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> openCamera()
                     1 -> openGallery()
                 }
             }
-            .setNegativeButton("Batal", null)
+            .setNegativeButton("Cancelled", null)
             .show()
     }
 
@@ -117,7 +111,7 @@ class MainActivity : AppCompatActivity() {
             val photoUri = result.data?.data
             navigateToResultActivity(photoUri)
         } else {
-            Toast.makeText(this, "Kamera dibatalkan", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Camera Cancelled", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -126,7 +120,7 @@ class MainActivity : AppCompatActivity() {
             val selectedImageUri = result.data?.data
             navigateToResultActivity(selectedImageUri)
         } else {
-            Toast.makeText(this, "Galeri dibatalkan", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Gallery Cancelled", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -135,11 +129,11 @@ class MainActivity : AppCompatActivity() {
             val token = getAuthToken()
             val intent = Intent(this, ResultActivity::class.java).apply {
                 putExtra("image_uri", imageUri.toString())
-                putExtra("auth_token", token) // Kirim token ke ResultActivity
+                putExtra("auth_token", token)
             }
             startActivity(intent)
         } else {
-            Toast.makeText(this, "Gambar tidak ditemukan", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Image not found", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -152,8 +146,8 @@ class MainActivity : AppCompatActivity() {
     private fun saveAuthToken(token: String) {
         val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        editor.putString("auth_token", token) // Menyimpan token
-        editor.apply() // Simpan secara asynchronous
+        editor.putString("auth_token", token)
+        editor.apply()
     }
 
     private fun clearAuthToken() {

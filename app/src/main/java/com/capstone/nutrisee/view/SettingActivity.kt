@@ -22,7 +22,6 @@ class SettingActivity : AppCompatActivity() {
         binding = ActivitySettingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Ambil token dari SharedPreferences
         val token = getAuthToken()
         if (token.isNullOrEmpty()) {
             Log.e("SettingActivity", "Token tidak ditemukan, mengarahkan ke login")
@@ -47,17 +46,14 @@ class SettingActivity : AppCompatActivity() {
             return
         }
 
-        // Disable tombol untuk mencegah klik berulang
         binding.btnConfirm.isEnabled = false
 
-        // Data pengguna yang akan dikirim
         val age = 25
         val gender = "male"
         val height = 170
         val weight = 70
         val targetWeight = "maintain weight"
 
-        // Log setiap field yang akan dikirim
         Log.d("SettingActivity", "Preparing data to send:")
         Log.d("SettingActivity", "Age: $age")
         Log.d("SettingActivity", "Gender: $gender")
@@ -73,7 +69,6 @@ class SettingActivity : AppCompatActivity() {
         jsonBody.put("weight", weight)
         jsonBody.put("targetWeight", targetWeight)
 
-        // Log JSON Body yang akan dikirim
         Log.d("SettingActivity", "JSON Body: ${jsonBody.toString()}")
 
         val requestBody = RequestBody.create(
@@ -104,7 +99,6 @@ class SettingActivity : AppCompatActivity() {
                         Log.d("SettingActivity", "Data berhasil dikirim: ${response.body?.string()}")
                         Toast.makeText(this@SettingActivity, "Data berhasil dikirim", Toast.LENGTH_SHORT).show()
 
-                        // Pindah ke MainActivity setelah sukses
                         navigateToMainActivity()
                     } else {
                         Log.e("SettingActivity", "Gagal mengirim data: ${response.code}")
@@ -116,12 +110,11 @@ class SettingActivity : AppCompatActivity() {
         })
     }
 
-    // Menambahkan fungsi navigateToMainActivity
     private fun navigateToMainActivity() {
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
-        finish() // Menutup SettingActivity setelah berpindah
+        finish()
     }
 
     private fun getAuthToken(): String? {
