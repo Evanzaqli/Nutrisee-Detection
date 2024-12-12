@@ -56,6 +56,7 @@
                 android:layout_height="wrap_content"
                 android:text="Carbohydrates: "
                 android:textSize="18sp"
+                android:fontFamily="@font/poppins"
                 android:paddingBottom="8dp" />
 
             <TextView
@@ -64,6 +65,7 @@
                 android:layout_height="wrap_content"
                 android:text="Protein: "
                 android:textSize="18sp"
+                android:fontFamily="@font/poppins"
                 android:paddingBottom="8dp" />
 
             <TextView
@@ -72,6 +74,7 @@
                 android:layout_height="wrap_content"
                 android:text="Fat: "
                 android:textSize="18sp"
+                android:fontFamily="@font/poppins"
                 android:paddingBottom="8dp" />
 
             <TextView
@@ -80,6 +83,7 @@
                 android:layout_height="wrap_content"
                 android:text="Fiber: "
                 android:textSize="18sp"
+                android:fontFamily="@font/poppins"
                 android:paddingBottom="8dp" />
 
             <TextView
@@ -88,7 +92,8 @@
                 android:layout_height="wrap_content"
                 android:text="Calories: "
                 android:textStyle="bold"
-                android:textSize="24sp" />
+                android:fontFamily="@font/poppins"
+                android:textSize="20sp" />
 
 
         </LinearLayout>
