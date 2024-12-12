@@ -114,12 +114,12 @@ class MainActivity : AppCompatActivity() {
                         Log.d("API Response", "Data berhasil diambil: $nutritionHistory")
 
                         // Update UI
-                        with(binding) {
-                            textCarbs.text = "Carbohydrates: ${nutritionHistory.targetCarbs} g"
-                            textProtein.text = "Protein: ${nutritionHistory.targetProtein} g"
-                            textFat.text = "Fat: ${nutritionHistory.targetFat} g"
-                            textFiber.text = "Fiber: ${nutritionHistory.targetFiber} g"
-                            textCalories.text = "Calories: ${nutritionHistory.targetCalories} kcal"
+                        with(binding) {0
+                            textCarbs.text = "Carbohydrates: ${nutritionHistory.remainingCarbs} / ${nutritionHistory.targetCarbs}"
+                            textProtein.text = "Protein: ${nutritionHistory.remainingProtein} / ${nutritionHistory.targetProtein}"
+                            textFat.text = "Fat: ${nutritionHistory.remainingFat} / ${nutritionHistory.targetFat}"
+                            textFiber.text = "Fiber: ${nutritionHistory.remainingFiber} / ${nutritionHistory.targetFiber}"
+                            textCalories.text = "Calories: ${nutritionHistory.remainingCalories.toInt()} / ${nutritionHistory.targetCalories.toInt()} kcal"
                         }
                     } else {
                         Log.e("MainActivity", "Data tidak ditemukan.")
