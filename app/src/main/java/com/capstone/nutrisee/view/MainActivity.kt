@@ -1,6 +1,5 @@
 package com.capstone.nutrisee.view
 
-import DashboardResponse
 import NutritionHistory
 import android.Manifest
 import android.app.Activity
@@ -11,11 +10,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -25,20 +22,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.capstone.nutrisee.R
 import com.capstone.nutrisee.databinding.ActivityMainBinding
 import com.capstone.nutrisee.login.OnboardingActivity
-import com.capstone.nutrisee.service.ApiService
 import com.capstone.nutrisee.utils.reduceFileImage
 import com.capstone.nutrisee.utils.uriToFile
-import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
 
 
@@ -65,14 +53,12 @@ class MainActivity : AppCompatActivity() {
         if (token.isNullOrEmpty()) {
             navigateToLogin()
         } else {
-            // Mengamati LiveData yang ada di ViewModel
             dashboardViewModel.nutritionHistory.observe(this, Observer { nutritionHistory ->
                 if (nutritionHistory != null) {
                     updateUI(nutritionHistory)
                 }
             })
 
-            // Memanggil fetchDashboardData untuk memuat data awal
             dashboardViewModel.fetchDashboardData(token)
         }
 
@@ -92,6 +78,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.button_home -> {
+                    replaceFragment(HistoryFragment())
                     true
                 }
                 R.id.button_setting -> {
@@ -116,8 +103,6 @@ class MainActivity : AppCompatActivity() {
             textCalories.text = "Calories: ${nutritionHistory.remainingCalories.toInt()} / ${nutritionHistory.targetCalories.toInt()} kcal"
         }
     }
-
-
 
 
     private fun navigateToLogin() {
@@ -220,18 +205,11 @@ class MainActivity : AppCompatActivity() {
         return sharedPreferences.getString("auth_token", null)
     }
 
-    private fun saveAuthToken(token: String) {
-        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("auth_token", token)
-        editor.apply()
-    }
-
-    private fun clearAuthToken() {
-        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.remove("auth_token")
-        editor.apply()
+    private fun replaceFragment(fragment: androidx.fragment.app.Fragment) {
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.fragment_container, fragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
 
     companion object {

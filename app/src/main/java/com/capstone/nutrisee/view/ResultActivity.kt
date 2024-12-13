@@ -21,6 +21,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.capstone.nutrisee.R
 import com.capstone.nutrisee.adapter.NutritionResultAdapter
 import com.capstone.nutrisee.data.model.NutritionInfo
+import com.capstone.nutrisee.database.ScanResult
+import com.capstone.nutrisee.database.ScanResultDatabase
 import com.capstone.nutrisee.login.LoginActivity
 import com.capstone.nutrisee.service.ApiConfig
 import kotlinx.coroutines.Dispatchers
@@ -95,7 +97,6 @@ class ResultActivity : AppCompatActivity() {
         val requestBody = RequestBody.create("image/jpeg".toMediaType(), imageFile)
         val filePart = MultipartBody.Part.createFormData("file", imageFile.name, requestBody)
 
-
         lifecycleScope.launch {
             showLoading(true)
             try {
@@ -110,6 +111,10 @@ class ResultActivity : AppCompatActivity() {
                         val detectedFoods = responseData.detectedFoods
                         val nutritionInfo = responseData.nutritionInfo
 
+                        // Simpan hasil scan ke database
+                        saveScanResultToDatabase(detectedFoods.joinToString(", "), nutritionInfo)
+
+                        // Tampilkan hasil
                         displayDetectedFoods(detectedFoods)
                         showNutritionResults(nutritionInfo)
                     } else {
@@ -117,18 +122,31 @@ class ResultActivity : AppCompatActivity() {
                     }
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    Log.e("API Error", "Response Code: ${response.code()}, Error: $errorBody")
                     val errorMessage = parseErrorMessage(errorBody ?: "")
                     Toast.makeText(this@ResultActivity, "API Error: $errorMessage", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Log.e("ResultActivity", "Failed to process API: ${e.message}", e)
                 Toast.makeText(this@ResultActivity, "Failed to contact server: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
                 showLoading(false)
             }
         }
     }
+
+    private fun saveScanResultToDatabase(foodName: String, nutritionInfo: List<NutritionInfo>) {
+        val scanResult = ScanResult(
+            foodName = foodName,
+            nutritionInfo = nutritionInfo.joinToString { "${it.foodClass}: ${it.calories} kcal" },
+            scanDate = System.currentTimeMillis()
+        )
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val database = ScanResultDatabase.getDatabase(applicationContext)
+            database.scanResultDao().insertScanResult(scanResult)
+            Log.d("ResultActivity", "Scan result saved to database: $scanResult")
+        }
+    }
+
 
     private fun parseErrorMessage(errorBody: String): String {
         return try {
