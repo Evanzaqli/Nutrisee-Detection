@@ -25,6 +25,7 @@ import com.capstone.nutrisee.database.ScanResult
 import com.capstone.nutrisee.database.ScanResultDatabase
 import com.capstone.nutrisee.login.LoginActivity
 import com.capstone.nutrisee.service.ApiConfig
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -178,6 +179,9 @@ class ResultActivity : AppCompatActivity() {
         }
 
         totalCaloriesTextView.text = "Total Kalori: ${String.format("%.1f", totalCalories)} kkal"
+
+        val parentLayout = findViewById<View>(android.R.id.content)
+        Snackbar.make(parentLayout, "This Food is Recommendation", Snackbar.LENGTH_LONG).show()
 
         Log.d("ResultActivity", "Total Calories: $totalCalories")
         Log.d("ResultActivity", "CardView Visibility: ${cardViewResult.visibility}")
