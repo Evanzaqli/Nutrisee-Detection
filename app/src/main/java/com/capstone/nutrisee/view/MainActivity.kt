@@ -96,11 +96,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateUI(nutritionHistory: NutritionHistory) {
         with(binding) {
-            textCarbs.text = "Carbohydrates: ${nutritionHistory.remainingCarbs.toInt()} / ${nutritionHistory.targetCarbs.toInt()}"
-            textProtein.text = "Protein: ${nutritionHistory.remainingProtein.toInt()} / ${nutritionHistory.targetProtein.toInt()}"
-            textFat.text = "Fat: ${nutritionHistory.remainingFat.toInt()} / ${nutritionHistory.targetFat.toInt()}"
-            textFiber.text = "Fiber: ${nutritionHistory.remainingFiber.toInt()} / ${nutritionHistory.targetFiber.toInt()}"
-            textCalories.text = "Calories: ${nutritionHistory.remainingCalories.toInt()} / ${nutritionHistory.targetCalories.toInt()} kcal"
+            textCarbs.text = "Carbohydrates: ${nutritionHistory.totalCarbs.toInt()} / ${nutritionHistory.targetCarbs.toInt()}"
+            textProtein.text = "Protein: ${nutritionHistory.totalProtein.toInt()} / ${nutritionHistory.targetProtein.toInt()}"
+            textFat.text = "Fat: ${nutritionHistory.totalFat.toInt()} / ${nutritionHistory.targetFat.toInt()}"
+            textFiber.text = "Fiber: ${nutritionHistory.totalFiber.toInt()} / ${nutritionHistory.targetFiber.toInt()}"
+            textCalories.text = "Calories: ${nutritionHistory.totalCalories.toInt()} / ${nutritionHistory.targetCalories.toInt()} kcal"
         }
     }
 

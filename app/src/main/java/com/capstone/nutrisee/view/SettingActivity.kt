@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.capstone.nutrisee.R
 import com.capstone.nutrisee.databinding.ActivitySettingBinding
 import com.capstone.nutrisee.login.LoginActivity
 import okhttp3.*
@@ -48,11 +49,28 @@ class SettingActivity : AppCompatActivity() {
 
         binding.btnConfirm.isEnabled = false
 
-        val age = 25
-        val gender = "male"
-        val height = 170
-        val weight = 70
-        val targetWeight = "maintain weight"
+        // Ambil data dari input pengguna
+        val age = binding.editAge.text.toString().toIntOrNull() ?: 0
+        val gender = when (binding.radioGroup.checkedRadioButtonId) {
+            R.id.radio_female -> "female"
+            R.id.radio_male -> "male"
+            else -> "Unknown"
+        }
+        val height = binding.editHeight.text.toString().toIntOrNull() ?: 0
+        val weight = binding.editWeight.text.toString().toIntOrNull() ?: 0
+        val targetWeight = when (binding.radioGroupGoal.checkedRadioButtonId) {
+            R.id.radio_maintain -> "maintain weight"
+            R.id.radio_loss -> "lose weight"
+            R.id.radio_gain -> "gain weight"
+            else -> "Unknown"
+        }
+
+        // Validasi input
+        if (age == 0 || height == 0 || weight == 0 || gender.isEmpty() || targetWeight.isEmpty()) {
+            Toast.makeText(this, "Harap lengkapi semua data!", Toast.LENGTH_SHORT).show()
+            binding.btnConfirm.isEnabled = true
+            return
+        }
 
         Log.d("SettingActivity", "Preparing data to send:")
         Log.d("SettingActivity", "Age: $age")
@@ -98,12 +116,24 @@ class SettingActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         Log.d("SettingActivity", "Data berhasil dikirim: ${response.body?.string()}")
                         Toast.makeText(this@SettingActivity, "Data berhasil dikirim", Toast.LENGTH_SHORT).show()
-
                         navigateToMainActivity()
                     } else {
                         Log.e("SettingActivity", "Gagal mengirim data: ${response.code}")
-                        Log.e("SettingActivity", "Response body: ${response.body?.string()}")
-                        Toast.makeText(this@SettingActivity, "Gagal mengirim data", Toast.LENGTH_SHORT).show()
+                        try {
+                            val responseBody = response.body?.string()
+                            if (responseBody != null) {
+                                val jsonResponse = JSONObject(responseBody)
+                                val message = jsonResponse.getString("message")
+                                if (message.contains("recommended target weight")) {
+                                    Toast.makeText(this@SettingActivity, message, Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(this@SettingActivity, "Gagal mengirim data: $message", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("SettingActivity", "Error parsing response", e)
+                            Toast.makeText(this@SettingActivity, "Gagal mengirim data", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
